@@ -6,7 +6,10 @@ defmodule BugflowWeb.Router do
   end
 
   scope "/api", BugflowWeb do
-    pipe_through :api
+  pipe_through :api
+
+  resources "/issues", IssueController, except: [:new, :edit]
+  resources "/workspaces", WorkspaceController, except: [:new, :edit]
   end
 
   # Enable LiveDashboard and Swoosh mailbox preview in development
