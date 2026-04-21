@@ -1,18 +1,49 @@
-# Bugflow
+# Bugflow (Elixir / Phoenix backend)
 
-To start your Phoenix server:
+A Bugflow egy REST alapú backend alkalmazás Elixir/Phoenix stackkel, amely workspace-ekhez tartozó issue-k kezelésére szolgál.
 
-* Run `mix setup` to install and setup dependencies
-* Start Phoenix endpoint with `mix phx.server` or inside IEx with `iex -S mix phx.server`
+## Stack
 
-Now you can visit [`localhost:4000`](http://localhost:4000) from your browser.
+- Elixir
+- Phoenix Framework
+- Ecto
+- PostgreSQL
+- ExUnit
 
-Ready to run in production? Please [check our deployment guides](https://hexdocs.pm/phoenix/deployment.html).
+## Funkciók
 
-## Learn more
+- Issue CRUD műveletek
+- Workspace – Issue reláció (1:N)
+- Szűrés:
+  - workspace_id
+  - status
+  - priority
+  - kombinált szűrés
+- Rendezés:
+  - inserted_at (asc/desc)
+  - priority (asc/desc)
+- Automatizált tesztek (38+)
 
-* Official website: https://www.phoenixframework.org/
-* Guides: https://hexdocs.pm/phoenix/overview.html
-* Docs: https://hexdocs.pm/phoenix
-* Forum: https://elixirforum.com/c/phoenix-forum
-* Source: https://github.com/phoenixframework/phoenix
+## Példa endpointok
+
+### Összes issue lekérése
+GET /api/issues
+
+### Szűrés workspace szerint
+GET /api/issues?workspace_id=<id>
+
+### Szűrés státusz szerint
+GET /api/issues?status=open
+
+### Kombinált szűrés
+GET /api/issues?workspace_id=<id>&status=open
+
+### Rendezés
+GET /api/issues?sort=inserted_at_desc
+
+## Telepítés
+
+```bash
+mix deps.get
+mix ecto.setup
+mix phx.server

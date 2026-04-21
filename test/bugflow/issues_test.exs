@@ -11,6 +11,10 @@ defmodule Bugflow.IssuesTest do
 
     @invalid_attrs %{priority: nil, status: nil, description: nil, title: nil}
 
+    # ------------------------
+    # CRUD
+    # ------------------------
+
     test "list_issues/0 returns all issues" do
       issue = issue_fixture()
       assert Issues.list_issues() == [issue]
@@ -77,5 +81,122 @@ defmodule Bugflow.IssuesTest do
       issue = issue_fixture()
       assert %Ecto.Changeset{} = Issues.change_issue(issue)
     end
+
+    # ------------------------
+    # FILTERS
+    # ------------------------
+
+    test "list_issues/1 filters by status" do
+      workspace = workspace_fixture()
+
+      issue_open =
+        issue_fixture(%{
+          workspace_id: workspace.id,
+          status: "open",
+          title: "Open issue"
+        })
+
+      _issue_done =
+        issue_fixture(%{
+          workspace_id: workspace.id,
+          status: "done",
+          title: "Done issue"
+        })
+
+      result = Issues.list_issues(%{"status" => "open"})
+
+      assert length(result) == 1
+      assert hd(result).id == issue_open.id
+    end
+
+    test "list_issues/1 filters by priority" do
+      workspace = workspace_fixture()
+
+      issue_high =
+        issue_fixture(%{
+          workspace_id: workspace.id,
+          priority: "high",
+          title: "High priority issue"
+        })
+
+      _issue_low =
+        issue_fixture(%{
+          workspace_id: workspace.id,
+          priority: "low",
+          title: "Low priority issue"
+        })
+
+      result = Issues.list_issues(%{"priority" => "high"})
+
+      assert length(result) == 1
+      assert hd(result).id == issue_high.id
+    end
+
+    test "list_issues/1 filters by workspace and status together" do
+      workspace_1 = workspace_fixture(%{name: "Workspace 1"})
+      workspace_2 = workspace_fixture(%{name: "Workspace 2"})
+
+      issue =
+        issue_fixture(%{
+          workspace_id: workspace_1.id,
+          status: "open",
+          title: "Matching issue"
+        })
+
+      _other_workspace_issue =
+        issue_fixture(%{
+          workspace_id: workspace_2.id,
+          status: "open",
+          title: "Wrong workspace"
+        })
+
+      _other_status_issue =
+        issue_fixture(%{
+          workspace_id: workspace_1.id,
+          status: "done",
+          title: "Wrong status"
+        })
+
+      result =
+        Issues.list_issues(%{
+          "workspace_id" => workspace_1.id,
+          "status" => "open"
+        })
+
+      assert length(result) == 1
+      assert hd(result).id == issue.id
+    end
+
+    # ------------------------
+    # SORT
+    # ------------------------
+
+    test "list_issues/1 sorts by inserted_at_desc" do
+  workspace = workspace_fixture()
+
+  older_issue =
+    issue_fixture(%{
+      workspace_id: workspace.id,
+      title: "Older issue"
+    })
+
+  Process.sleep(1100)
+
+  newer_issue =
+    issue_fixture(%{
+      workspace_id: workspace.id,
+      title: "Newer issue"
+    })
+
+  result =
+    Issues.list_issues(%{
+      "workspace_id" => workspace.id,
+      "sort" => "inserted_at_desc"
+    })
+
+  assert length(result) == 2
+  assert Enum.at(result, 0).id == newer_issue.id
+  assert Enum.at(result, 1).id == older_issue.id
+  end
   end
 end

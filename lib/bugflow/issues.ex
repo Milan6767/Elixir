@@ -20,18 +20,63 @@ defmodule Bugflow.Issues do
   def list_issues(filters \\ %{}) do
     Issue
     |> maybe_filter_by_workspace(filters)
+    |> maybe_filter_by_status(filters)
+    |> maybe_filter_by_priority(filters)
+    |> maybe_sort(filters)
     |> Repo.all()
   end
 
-  defp maybe_filter_by_workspace(query, %{"workspace_id" => workspace_id}) when is_binary(workspace_id) do
+  defp maybe_filter_by_workspace(query, %{"workspace_id" => workspace_id})
+       when is_binary(workspace_id) do
     from i in query, where: i.workspace_id == ^workspace_id
   end
 
-  defp maybe_filter_by_workspace(query, %{workspace_id: workspace_id}) when is_binary(workspace_id) do
+  defp maybe_filter_by_workspace(query, %{workspace_id: workspace_id})
+       when is_binary(workspace_id) do
     from i in query, where: i.workspace_id == ^workspace_id
   end
 
   defp maybe_filter_by_workspace(query, _filters), do: query
+
+  defp maybe_filter_by_status(query, %{"status" => status}) when is_binary(status) do
+    from i in query, where: i.status == ^status
+  end
+
+  defp maybe_filter_by_status(query, %{status: status}) when is_binary(status) do
+    from i in query, where: i.status == ^status
+  end
+
+  defp maybe_filter_by_status(query, _filters), do: query
+
+  defp maybe_filter_by_priority(query, %{"priority" => priority}) when is_binary(priority) do
+    from i in query, where: i.priority == ^priority
+  end
+
+  defp maybe_filter_by_priority(query, %{priority: priority}) when is_binary(priority) do
+    from i in query, where: i.priority == ^priority
+  end
+
+  defp maybe_filter_by_priority(query, _filters), do: query
+
+  defp maybe_sort(query, %{"sort" => "inserted_at_desc"}) do
+    from i in query, order_by: [desc: i.inserted_at]
+  end
+
+  defp maybe_sort(query, %{"sort" => "inserted_at_asc"}) do
+    from i in query, order_by: [asc: i.inserted_at]
+  end
+
+  defp maybe_sort(query, %{"sort" => "priority_desc"}) do
+    from i in query, order_by: [desc: i.priority]
+  end
+
+  defp maybe_sort(query, %{"sort" => "priority_asc"}) do
+    from i in query, order_by: [asc: i.priority]
+  end
+
+  defp maybe_sort(query, _filters) do
+    from i in query, order_by: [desc: i.inserted_at]
+  end
 
   @doc """
   Gets a single issue.
